@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html><head><title>eme</title></head><body>
+<div id="out"></div>
+<script>
+// EME probe: does this WebKitGTK see com.widevine.alpha?
+// Writes result to document.title so acreetion-surf's history captures it.
+async function main() {
+  var r = "";
+  try {
+    var config = [{ initDataTypes: ["cenc","webm"],
+                    audioCapabilities: [{ contentType: "audio/mp4;codecs=mp4a.40.2" }],
+                    videoCapabilities: [{ contentType: "video/mp4;codecs=avc1.42E01E" }] }];
+    if (navigator.requestMediaKeySystemAccess) {
+      try {
+        var acc = await navigator.requestMediaKeySystemAccess("com.widevine.alpha", config);
+        r = "EME(widevine)=SUPPORTED";
+      } catch (e) {
+        r = "EME(widevine)=DENIED";
+      }
+      try {
+        var acc2 = await navigator.requestMediaKeySystemAccess("org.w3.clearkey", config);
+        r += " clearkey=SUPPORTED";
+      } catch (e) {
+        r += " clearkey=DENIED";
+      }
+    } else {
+      r = "EME(API)=MISSING";
+    }
+  } catch (e) {
+    r = "EME(ERROR)=" + e.message;
+  }
+  document.title = "EMERESULT(" + r + ")";
+  document.getElementById("out").textContent = r;
+}
+main();
+</script></body></html>

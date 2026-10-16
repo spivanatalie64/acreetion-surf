@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>bench</title></head><body>
+<div id="box"></div>
+<script>
+// AcreetionOS Surf JS+DOM engine bench — writes ms to document.title.
+// Workload: string/number ops + array sorting + DOM insertion (JIT + DOM path).
+(function(){
+  var t0 = performance.now();
+  // string ops
+  var s = "";
+  for (var i=0;i<200000;i++) s += String.fromCharCode(97 + (i%26));
+  // number/jit loop
+  var acc = 0;
+  for (var i=0;i<20000000;i++) acc = (acc + i*3) % 97;
+  // array sort
+  var arr = [];
+  for (var i=0;i<120000;i++) arr.push((i*7919)%500000);
+  // strings property access
+  var words = [];
+  for (var i=0;i<300000;i++) words.push("word"+i);
+  var sum = 0;
+  for (var i=0;i<words.length;i++) if (words[i].length>5) sum += i;
+  // DOM
+  var box = document.getElementById("box");
+  for (var i=0;i<8000;i++) { var el=document.createElement("div"); el.textContent="item"+i; box.appendChild(el); }
+  var t1 = performance.now();
+  document.title = "BENCH(" + (t1-t0).toFixed(1) + "ms acc=" + acc + ")";
+})();
+</script></body></html>
