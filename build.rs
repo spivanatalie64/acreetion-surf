@@ -59,3 +59,5 @@ fn main() {
 
     println!("cargo:rerun-if-changed=src/surf.c");
 }
+// Firefox addon adapter support
+fn main_ext() {}

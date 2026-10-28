@@ -70,3 +70,8 @@ make test      # smoke test: --help + 5s launch with window-up check
 Paths: `~/.config/acreetion-surf/` (cookies, history, bookmarks, geometry),
 `~/.local/share/acreetion-surf/` (WebKit site data), `~/.cache/acreetion-surf/`
 (Web cache + IPC socket).
+## Firefox Addon Support (Experimental)
+This project now supports Firefox WebExtension addons via the separate adapter:
+- Repository: https://github.com/spivanatalie64/acreetion-surf-webkit-to-firefox-addon-adapter
+- Build with `cargo build --release --features firefox_addons`
+- Addons loaded from `~/.config/acreetion-surf/addons/`

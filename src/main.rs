@@ -286,3 +286,18 @@ fn main() {
     let ret = unsafe { surf_main(args.len() as c_int, argv.as_mut_ptr()) };
     std::process::exit(ret);
 }
+// Firefox addon adapter FFI bindings
+#[cfg(feature = "firefox_addons")]
+extern "C" {
+    fn acrefx_adapter_new(context: *mut std::ffi::c_void) -> *mut std::ffi::c_void;
+    fn acrefx_adapter_load_addon(adapter: *mut std::ffi::c_void, path: *const c_char) -> c_int;
+    fn acrefx_adapter_free(adapter: *mut std::ffi::c_void);
+}
+
+#[no_mangle]
+pub extern "C" fn surf_firefox_addons_init() {
+    #[cfg(feature = "firefox_addons")]
+    {
+        // Will be initialized from C side with WebKit context
+    }
+}
