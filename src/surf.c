@@ -307,6 +307,13 @@ static void on_load_finished(WebKitWebView *wv, WebKitLoadEvent event, BrowserTa
     /* Inject autofill helper */
     webkit_web_view_evaluate_javascript(wv, AUTOFILL_INJECT_JS, -1,
                                         NULL, NULL, NULL, NULL, NULL);
+
+#ifdef HAVE_FIREFOX_ADDONS
+    /* Inject Firefox addon content scripts */
+    if (firefox_adapter) {
+        acrefx_adapter_process_page_load(wv);
+    }
+#endif
 }
 
 static WebKitWebView *on_create_window(WebKitWebView *wv, WebKitNavigationAction *act, gpointer data) {
