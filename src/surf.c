@@ -307,6 +307,13 @@ static void on_load_finished(WebKitWebView *wv, WebKitLoadEvent event, BrowserTa
     /* Inject autofill helper */
     webkit_web_view_evaluate_javascript(wv, AUTOFILL_INJECT_JS, -1,
                                         NULL, NULL, NULL, NULL, NULL);
+
+#ifdef HAVE_FIREFOX_ADDONS
+    /* Inject Firefox addon content scripts */
+    if (firefox_adapter) {
+        acrefx_adapter_process_page_load(wv);
+    }
+#endif
 }
 
 static WebKitWebView *on_create_window(WebKitWebView *wv, WebKitNavigationAction *act, gpointer data) {
@@ -960,6 +967,21 @@ int surf_main(int argc, char **argv) {
     /* Downloads */
     g_signal_connect(app.ctx, "download-started", G_CALLBACK(on_download_started), NULL);
 
+#ifdef HAVE_FIREFOX_ADDONS
+    /* Initialize Firefox addon adapter */
+    const char *home = getenv("HOME");
+    if (home) {
+        gchar *config_dir = g_build_filename(home, ".config", "acreetion-surf", NULL);
+        if (acrefx_adapter_init_for_surf(app.ctx, config_dir)) {
+            gchar *addons_dir = g_build_filename(config_dir, "addons", NULL);
+            g_mkdir_with_parents(addons_dir, 0755);
+            acrefx_adapter_load_addons_from_dir(addons_dir);
+            g_free(addons_dir);
+        }
+        g_free(config_dir);
+    }
+#endif
+
     /* ─── Build the window ─── */
     app.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(app.window), APP_TITLE);
@@ -1044,3 +1066,8 @@ int surf_main(int argc, char **argv) {
     gtk_main();
     return 0;
 }
+/* Firefox addon adapter integration */
+#ifdef HAVE_FIREFOX_ADDONS
+#include "acrefxadapter.h"
+static AcreFxAdapter *firefox_adapter = NULL;
+#endif

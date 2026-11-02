@@ -1,5 +1,6 @@
 // build.rs — compile the C browser shell and link GTK/WebKit/json-glib
 use std::process::Command;
+use std::path::Path;
 
 fn pkg_config(args: &[&str]) -> Vec<String> {
     let out = Command::new("pkg-config")
@@ -34,12 +35,33 @@ fn main() {
     lib_args.extend(&pkgs);
     let libs = pkg_config(&lib_args);
 
-    // Compile the C shell
+    // Check for Firefox addon adapter
     let mut build = cc::Build::new();
     build.file("src/surf.c");
     for flag in &cflags {
         build.flag(flag);
     }
+    
+    // Try to find adapter
+    let adapter_paths = [
+        "third_party/firefox-adapter/include",
+        "../acreetion-surf-webkit-to-firefox-addon-adapter/include",
+        "/usr/local/include/acrefxadapter",
+        "/usr/include/acrefxadapter",
+    ];
+    let mut found_adapter = false;
+    for path in &adapter_paths {
+        if Path::new(path).exists() {
+            build.include(path);
+            found_adapter = true;
+            break;
+        }
+    }
+    
+    if found_adapter {
+        build.define("HAVE_FIREFOX_ADDONS", None);
+    }
+    
     // Silence GObject callback unused-parameter noise (required by signal signatures)
     build.flag("-Wno-unused-parameter");
     build.flag("-Wno-unused-function");
@@ -56,8 +78,23 @@ fn main() {
             println!("cargo:rustc-link-search=native={}", path);
         }
     }
+    
+    // Link Firefox addon adapter if found
+    let lib_paths = [
+        "third_party/firefox-adapter/lib",
+        "third_party/firefox-adapter/build",
+        "../acreetion-surf-webkit-to-firefox-addon-adapter/build",
+        "/usr/local/lib",
+        "/usr/lib",
+    ];
+    for path in &lib_paths {
+        if Path::new(path).join("libacrefxadapter.so").exists() {
+            println!("cargo:rustc-link-search=native={}", path);
+            println!("cargo:rustc-link-lib=dylib=acrefxadapter");
+            break;
+        }
+    }
 
     println!("cargo:rerun-if-changed=src/surf.c");
+    println!("cargo:rerun-if-changed=third_party/firefox-adapter/");
 }
-// Firefox addon adapter support
-fn main_ext() {}
