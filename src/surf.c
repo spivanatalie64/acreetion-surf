@@ -969,15 +969,16 @@ int surf_main(int argc, char **argv) {
 
 #ifdef HAVE_FIREFOX_ADDONS
     /* Initialize Firefox addon adapter */
-    firefox_adapter = acrefx_adapter_new(app.ctx);
-    if (firefox_adapter) {
-        /* Load addons from config directory */
-        const char *home = getenv("HOME");
-        if (home) {
-            gchar *addons_dir = g_build_filename(home, ".config", "acreetion-surf", "addons", NULL);
-            /* TODO: scan and load addons */
+    const char *home = getenv("HOME");
+    if (home) {
+        gchar *config_dir = g_build_filename(home, ".config", "acreetion-surf", NULL);
+        if (acrefx_adapter_init_for_surf(app.ctx, config_dir)) {
+            gchar *addons_dir = g_build_filename(config_dir, "addons", NULL);
+            g_mkdir_with_parents(addons_dir, 0755);
+            acrefx_adapter_load_addons_from_dir(addons_dir);
             g_free(addons_dir);
         }
+        g_free(config_dir);
     }
 #endif
 
