@@ -960,6 +960,20 @@ int surf_main(int argc, char **argv) {
     /* Downloads */
     g_signal_connect(app.ctx, "download-started", G_CALLBACK(on_download_started), NULL);
 
+#ifdef HAVE_FIREFOX_ADDONS
+    /* Initialize Firefox addon adapter */
+    firefox_adapter = acrefx_adapter_new(app.ctx);
+    if (firefox_adapter) {
+        /* Load addons from config directory */
+        const char *home = getenv("HOME");
+        if (home) {
+            gchar *addons_dir = g_build_filename(home, ".config", "acreetion-surf", "addons", NULL);
+            /* TODO: scan and load addons */
+            g_free(addons_dir);
+        }
+    }
+#endif
+
     /* ─── Build the window ─── */
     app.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(app.window), APP_TITLE);
@@ -1044,3 +1058,8 @@ int surf_main(int argc, char **argv) {
     gtk_main();
     return 0;
 }
+/* Firefox addon adapter integration */
+#ifdef HAVE_FIREFOX_ADDONS
+#include "acrefxadapter.h"
+static AcreFxAdapter *firefox_adapter = NULL;
+#endif
